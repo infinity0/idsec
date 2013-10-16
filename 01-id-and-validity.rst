@@ -10,16 +10,27 @@ Concepts
 
 **Validity** (a security property). One must know that the identifier actually is controlled by (writeable by, useable by) the identity. Validity itself has only two states - "valid" and "invalid". However, we might not have perfect knowledge, so we also need a third state, "unknown". [#M1]_ [#F2]_
 
-In PGP, this would be if the key is actually controlled by its UIDs. On a web social network, this would be if the user profile is actually controlled by the claimed name. In both cases it is quite easy to create invalid (fake) identities. [#M2]_
+In PGP, this would be if the key is actually controlled by its UIDs. On a web social network, this would be if the user profile is actually controlled by the person with the claimed name. In both cases it is quite easy to create invalid (fake) identities. [#M2]_
 
-**Verification** (a process). This is a process that you run to check the state of some security property. In the context identity systems, unqualified "verification" usually refers to verification of identifier validity. Other forms of verification exist (e.g. cryptographic signature verification), so it's important to understand this implicit assumption in terminology.
+**Verification** (a process). This is a process that you run to check the state of some security property. In the context of identity systems, unqualified "verification" usually refers to verification of identifier validity. Other forms of verification exist (e.g. cryptographic signature verification), so it's important to acknowledge this implicit convention.
 
-**Verification of validity**. Validity cannot be objectively calculated; a source identity must check a target identity. In many systems this is an ad-hoc process and that works well. For example, on web social networks you might look at the behaviour of the account and check that it matches the character of the person. In systems that provide cryptographic levels of security, we need much stricter processes to match the strong cryptographic security the in other parts of the system. Otherwise, that strong security is pointless.
+**Verification of validity**. Validity cannot be objectively calculated; a source identity must check a target identity. In many systems this is an ad-hoc process and that works well. On web social networks you might look at the behaviour of the account and check that it matches the character of the person. Of course, this is not fully secure, but "good enough" for everyday purposes in that environment.
 
-We'll call the best possible process **full verification** - the process is done by yourself, and it achieves full certainty as to the result. Generally, the source requests an unforgeable proof from the target identity that they control the identifier. The traditional method in cryptosystems, is to establish the target's key fingerprint via a known secure channel (e.g. physical meeting), then ask them to decrypt something using that key [#F3]_. More recent developments are a bit more convenient, e.g. using the socialist millionaire protocol. In a web social network, one might ask the target to send a message from that profile, to prove access.
+The strength of a chain is only as good as its weakest link though, so if we wish to have higher confidence in our security, we need much stricter verification processes, whose strength can match the strength of the cryptographic parts of the system. Otherwise, the latter can simply be bypassed by holes in the former, and is rendered pointless (and even a waste of resources to have developed).
 
-Verification of validity
-++++++++++++++++++++++++
+Full verification
++++++++++++++++++
+
+**Full verification**. The (idealised) process that gives us the theoretical maximum confidence. Generally, the source requests an **authentic confirmation** *C* from the target identity that they control the identifier. If there is reason/incentive for the actual real target identity to lie about this (if the identifier might belong to someone else), the source should also request some **unforgeable proof** *P* of this control. More precise discussion is delegated to the footnote [#M5]_ - also note that the process might be *structurally* different. [#M6]_
+
+In a web social network, *C* might be to manually ask the target/friend via another channel (e.g. IM), and *P* might be to ask the friend to send a message from that profile, to prove they have access to it. Normally you wouldn't even bother with *P*, unless your friend is trying to convince you that they control some other unexpected profile.
+
+Traditionally in cryptosystems, *C* is achieved by receiving the target's key fingerprint, and *P* is achieved by asking them to decrypt something using that key. [#M6]_ More recent developments are slightly more convenient - such as using the `Socialist Millionaire <http://en.wikipedia.org/wiki/Socialist_millionaire>`_ protocol to confirm a known shared secret. However, they all still require a **known secure channel** for an initial transfer of authentic data (the fingerprint or the shared secret). In many cases this is a physical meeting, but you could also use a channel to a different identifier on a different medium, as long as it is known-valid for the target - e.g., receiving your target's OTR fingerprints via email, signed by a PGP key known-valid for the target.
+
+You might have noticed that the above outline only verifies the key against the identity. In PGP, keys have other metadata attached, which must be verified as well for validity. Most people get this wrong too, but to keep things simple here we delegate discussion to the footnote. [#F3]_ [#F4]_
+
+Partial verification
+++++++++++++++++++++
 
 Verification is a logistic activity (*not* cryptographic) and carries a cost. Full verification is the most costly; and it is considered infeasible for everyone to fully verify everyone else. We would prefer not to sacrifice security, so we devise systems to improve this situation. These *all* sacrifice full verification for lower cost [#O3]_, and can be categorised as follows:
 
@@ -86,12 +97,15 @@ TODO(infinity0): Do that diagram in SVG.
 
 .. [#M1] A more precise encoding could be 3 probabilities that sum to 1, to represent our beliefs in the state being "valid", "invalid", or "unknown" (our uncertainty).
 .. [#M2] This low cost forms the basis of many attacks on the system.
-.. [#M3] Perhaps with a method to sychronise it between devices, but we can ignore that extension for now.
+.. [#M3] Perhaps with a way to sychronise it between devices, but we can ignore that extension for now.
 .. [#M4] There are some issue with this, which we'll talk about in the later sections. TODO
+.. [#M5] Authentic means that it is absolutely certain the information came from the target as intended, and was not altered during transit. Unforgeable means that it is absolutely certain that the target could not construct a fake proof. "Absolute" might be interpreted a little more loosely in the real world, but even in low security settings this must never include "trust in a third party", because that lowers it much too severely. Instead, third parties ought to be properly modelled by the theory of the security model.
+.. [#M6] Certain tools structure this process differently, but the outcome is the same. For example, `caff`, a verifier tool for PGP, signs the key (with the verified fingerprint, *C*) unconditionally, then encrypts the signed key to the identifier - so that only someone who really controls the identifier can obtain the signature and make use of it, thereby *implicitly* achieving *P*.
 
 .. [#F1] The unfortunately-named "UID" is actually a name; "u" stands for "user" not "unique".
 .. [#F2] So already we see a flaw of the PGP model - it does not let users represent "verified as invalid". But this is fixable on the implementation/UI side.
-.. [#F3] In many cases for PGP this is done incorrectly - only the key fingerprint is checked, and you trust that the target controls that key. The web social network analogy would be simply believing the target when they say they own that profile. Then, your security depends on your target being truthful.
+.. [#F3] We see another flaw of the PGP model. The key material, the name, and email address, are semantically distinct identifiers on different mediums. PGP combines the name and address into a single UID. But I could lie about one and not the other - then the correct thing would be to verify as INVALID. But many people get confused by this, and only verify my name during a physical meeting, but don't verify that I also control the email address. (`caff` does do this.)
+.. [#F4] Another issue is that PGP software implicitly conflates the UID identifier with the identity itself - most verification UX only mentions "the key validity" and not "the UID validity". The sharp reader might notice that we do this ourselves in the initial definition of identity - we didn't want to be too pedantic at the start. But, more precisely, the validity explanation should read - In PGP, [validity] would be if the key and its email addresses are actually controlled by a person with the claimed name, and this name is acceptably real, for some definition of "real".
 
 .. [#O1] People that say "SSH/OTR succeeded where PGP failed" don't understand the problem - we want to get as close to full verification as possible. Both SSH/OTR and PGP can be improved in this area, the difference is that the PGP model is *capable* of being improved, whereas SSH/OTR has no identity management primitives whatsoever.
 .. [#O2] HTTPS and anything that uses X509 is only partially secure because you assume trust in the root CAs.
