@@ -4,7 +4,7 @@ Identity and validity
 Concepts
 ++++++++
 
-**Identity** (a user). The actual underlying sovereign user, able to *do things*.
+**Identity** (a user). The actual underlying sovereign user, an entity external to the identity system capable of interacting with it and initiating action. [#M0]_ By default, security models tend to assume that each identity acts **independently** [#M0b]_; there are security consequences if this assumption is broken.
 
 **Identifier** (a piece of data). One must be able to uniquely point to an identity. In PGP this is done using a *key* with identifying metadata (name, email, url) called UIDs [#F1]_; in web social networks this is done using a *user profile*. Typically, jargon terms involving "id" stand for "identifier" and not the underlying identity.
 
@@ -95,6 +95,8 @@ TODO(infinity0): Do that diagram in SVG.
 
 ----
 
+.. [#M0] This might not be a real living thing - it might be one of many virtual alias identities of a single living thing, or it might be a group virtual identity that represents many living things. TODO: talk about the detection of the real equivalence of multiple identities, how this might be used to defend against the sybil attack, but also to break the pseudonymity of a refugee.
+.. [#M0b] A better way of saying this might be "able to express self-interest" - two identities might co-operate for mutual benefit, and the security model would still hold. However, if one identity is totally controlled by another, such that the actions of the slave are only really *extensions* of the actions of the master, and this is not expressed in the model, then the security properties achieved by the model may be broken.
 .. [#M1] A more precise encoding could be 3 probabilities that sum to 1, to represent our beliefs in the state being "valid", "invalid", or "unknown" (our uncertainty).
 .. [#M2] This low cost forms the basis of many attacks on the system.
 .. [#M3] Perhaps with a way to sychronise it between devices, but we can ignore that extension for now.
